@@ -1,0 +1,284 @@
+<html>
+	<head>
+		<title>mine</title>
+		<meta charset="utf-8" />
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+		<style>
+			table#minefield td{
+				width: 40px;
+				height: 40px;
+				text-align: center;
+				border: 1px solid black;
+				
+				
+			}
+			table#minefield{
+				border-collapse: collapse;
+			}
+			
+			
+			
+			#timer{
+				color: red;
+				font-weight: bold;
+			}
+			
+			.has1{
+				color: red;
+			}
+			.has2{
+				color: blue;
+			}
+			.has3{
+				color: green;
+			}
+			.has4{
+				color: hotpink;
+			}
+			.has5{
+				color: yellow;
+			}
+			.has6{
+				color: gray;
+			}
+			.has7{
+				color: darkgreen;
+			}
+			.has8{
+				color: lightblue;
+			}
+			.has-Infinity{
+				font-size: 0;
+				background-image: url('https://cdn0.iconfinder.com/data/icons/win8-and-ios-tab-bar-icons/40/Bomb.png');
+			}
+			
+			button.btn-mine{
+				padding: 0;
+				margin: 0;
+				width: 40px;
+				height: 40px;
+				font-size: 12pt;
+				color: black;
+			}
+			
+			.button.btn-mine span.glyphicon{
+				color: black;
+				font-size: 12pt;
+				
+			}
+
+		</style>
+	</head>
+	<body>
+		<nav class="navbar navbar-default">
+			<div class="container-fluid">
+				<ul class="nav nav-tabs">
+					<li><a><span id="timer">00</span></a></li>
+					<li><a href="#" onclick="draw($('table#minefield tbody'));" title="reload"><span class="glyphicon glyphicon-refresh"></span></a></li>
+					<li><a data-toggle="modal" data-target="#opcoes">Opções <span class="caret"></span></a>
+				</ul>
+			</div>
+		</nav>
+		
+		<div class="modal fade" id="opcoes" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">Opções</h4>
+					</div>
+					<div class="modal-body">
+						<ul>
+							<li><label> Colunas: <input class="form-control" type="text" id="width" name="width" value="10" /></label> </li>
+							<li><label> Linhas: <input class="form-control" type="text" id="height" name="height" value="10" /></label></li>
+							<li><label> Minas: <input class="form-control" type="text" id="bombs" name="bombs" value="10" /></label></li>
+						</ul>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+						<button type="button" class="btn btn-primary" onclick="draw($('table#minefield tbody'));$('#opcoes').modal('hide')">Gerar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="modal fade" id="aviso" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">Aviso</h4>
+					</div>
+					<div class="modal-body">
+						<ul>
+							<p><strong><span id="msg-aviso"></span></strong></p>
+						</ul>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+						<button type="button" class="btn btn-primary" onclick="draw($('table#minefield tbody'));$('#aviso').modal('hide')">Jogar Novamente</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+		<table id="minefield">
+			<tbody />
+		</table>
+		
+		
+	
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+		<script>
+			var fieldset = [[]];
+			
+			function generate(){
+				timerStarted = false;
+				for( var i = 0 ; i < width; i++ ){
+						fieldset[i] = [];
+					for( var j = 0 ; j < height ; j++ ){
+						fieldset[i][j] = 0;
+					}
+				}
+				for ( var i = 0 ; i < bombs ; i++ ){
+					var x = Math.floor(Math.random() * width);
+					var y = Math.floor(Math.random() * height);
+					if( fieldset[x][y] >= 0 ){
+						fieldset[x][y] = Number.NEGATIVE_INFINITY;
+						try{ fieldset[x+1][y+1]++; } catch(e){}
+						try{ fieldset[x+1][y]++;   } catch(e){}
+						try{ fieldset[x+1][y-1]++; } catch(e){}
+						try{ fieldset[x-1][y+1]++; } catch(e){}
+						try{ fieldset[x-1][y]++;   } catch(e){}
+						try{ fieldset[x-1][y-1]++; } catch(e){}
+						try{ fieldset[x][y+1]++;   } catch(e){}
+						try{ fieldset[x][y-1]++;   } catch(e){}
+					}else{
+						i--;
+					}
+				}
+			}
+			
+			function draw(parent){
+				parent.html("");
+				clearedarea = 0;
+				$("#timer").text("00");
+				width =  $("input:text[name=width]").val();
+			    height = $("input:text[name=height]").val();
+				bombs =  $("input:text[name=bombs]").val();
+				generate();
+				for( var j = 0 ; j < height ; j++ ){
+					var row = $("<tr>");
+					for( var i = 0 ; i < width; i++ ){
+						var value = fieldset[i][j];
+						
+						var button = $("<button>",{ id: i +"_"+ j, click: buttonClick, class: "btn-mine"} );
+						var flagspan = $("<span>");
+						button.append(flagspan);
+						button.mousedown(putFlags);
+						var field = $("<td>");
+						field.append(button);
+						row.append(field);
+					}
+					parent.append(row);
+				}
+				
+				return false;
+				
+			}
+			
+			function putFlags(event){
+				if( event.which == 3 ){
+					var flagspan = $(event.target).children();
+					var status = "";
+					console.log(flagspan.attr('class'));
+					if(flagspan.attr('class') == 'glyphicon glyphicon-flag'){
+						status = "glyphicon glyphicon-option-horizontal";
+					}
+					
+					if( flagspan.attr('class') == "" || flagspan.attr('class') === undefined){
+						status = "glyphicon glyphicon-flag";
+					}
+					
+					flagspan.attr('class', status);  
+				}
+			}
+			
+			function buttonClick(){
+				timerStarted = true;
+				var position = $(this).attr("id").split("_");
+				var x = Number(position[0]);
+				var y = Number(position[1]);
+				var value = fieldset[x][y];
+				clearedarea++;
+				if ( value < 0 ) {
+					value = "bomb";
+				}
+				if ( value == 0 ) {
+					value = "";
+				}
+				$(this).after($("<span>",{text: value, class: "has"+fieldset[x][y]}));
+				$(this).hide();
+				
+				
+				if( value == "" ) {			
+					checkPosition(x+1, y);
+					checkPosition(x-1, y);
+					checkPosition(x, y+1);
+					checkPosition(x ,y-1);
+				}
+				
+				if( value == "bomb" ){
+					$("#msg-aviso").text("Você perdeu!");
+					$("#aviso").modal("show");
+					timerStarted = false;
+					disableButtons();
+					return;
+				}
+				
+				if( (Number(width) * Number(height)) == (clearedarea + Number(bombs)) ){
+					$("#msg-aviso").text("Você ganhou!");
+					$("#aviso").modal("show");
+					timerStarted = false;
+					disableButtons();
+				}
+				
+			
+			}
+			
+			function disableButtons(){
+				$("button.btn-mine").each(function(){
+					$(this).prop( "disabled", true );
+				});
+			}
+			
+			function checkPosition(x,y){
+				try { var check = fieldset[x][y]; } catch(e) {}
+				if( check >= 0 ){
+					var nextButton = "button#"+(x)+"_"+(y);
+					if($(nextButton).css( "display") !== "none" ){
+						$(nextButton).click();
+					}
+				}
+				
+			}
+			
+			setInterval(timer, 1000);
+			function timer(){
+				if(timerStarted){
+					var timerDisplay = $("#timer");
+					var time = Number(timerDisplay.text());
+					timerDisplay.text(time+1);
+				}
+			}
+			
+			draw($('table#minefield tbody'));
+			document.oncontextmenu = function() {return false;};
+		</script>
+		
+		
+		
+	</body>
+</html>
